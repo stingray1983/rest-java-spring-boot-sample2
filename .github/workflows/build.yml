@@ -8,29 +8,40 @@ on:
     branches:
       - main
 
+
 jobs:
-  build:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     permissions:
-      contents: read # actions/checkoutのために必要
-      pull-requests : write # reviewdog/action-suggesterのために必要
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: gradle/wrapper-validation-action@v1
-      - uses: actions/setup-java@v3
-        with:
-          distribution: microsoft
-          java-version: 21 # toolchainで指定したバージョンと同じものを使う
-      - uses: gradle/gradle-build-action@v2
-        with:
-          arguments: spotlessApply build --scan
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: Gradle reports
-          path: build/reports
-      - uses: reviewdog/action-suggester@v1
-        if: github.event_name == 'pull_request'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tool_name: spotless
+    - name: "checkoutする"
+      uses: actions/checkout@v4
+    - name: "docker buildxが使えるようにする"
+      uses: docker/setup-buildx-action@v3
+    # NOTE: ecr-loginなどに切り替えることで、別サービスへのプッシュも可能です
+    - name: "ghcr.ioにログインする"
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.TOKEN }}
+    - name: "メタデータを作成する"
+      id: meta # 後段で参照できるようにoutputsに登録する
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/secrets.TARGET_REPO
+        tags: |
+          type=raw,value=latest
+          type=sha,prefix=,suffix=,format=short
+    - name: "コンテナイメージをビルドしてghcr.ioにコンテナイメージをpushする"
+      uses: docker/build-push-action@v5
+      with:
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }} # 前ステップで設定したタグを参照する
+        labels: ${{ steps.meta.outputs.labels }} # 前ステップで設定したラベルを参照する
