@@ -1,5 +1,5 @@
 # ビルドステージ
-FROM gradle:8.10.2-jdk21-alpine as build
+FROM gradle:8.10.2-jdk21-alpine AS builder
 COPY --chown=gradle:gradle ./ /home/gradle/
 WORKDIR /home/gradle
 RUN gradle build --no-daemon 
@@ -11,7 +11,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # ビルドステージからSpring Bootアプリケーションのjarファイルをコピー
-COPY --from=build /home/gradle/build/libs/example-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /home/gradle/build/libs/example-0.0.1-SNAPSHOT.jar app.jar
 
 # ポートを公開 (Spring Bootのデフォルトポート)
 EXPOSE 8080
