@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Java CI with Gradle
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read # actions/checkoutのために必要
-      pull_requests: write # reviewdog/action-suggesterのために必要
+      pull_request : write # reviewdog/action-suggesterのために必要
     steps:
       - uses: actions/checkout@v3
       - uses: gradle/wrapper-validation-action@v1
