@@ -34,7 +34,7 @@ jobs:
       id: meta # 後段で参照できるようにoutputsに登録する
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{secrets.TARGET_REPO}}
+        images: ${{secrets.TARGET_REPO}}
         tags: |
           type=raw,value=latest
           type=sha,prefix=,suffix=,format=short
