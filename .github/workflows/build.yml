@@ -28,7 +28,7 @@ jobs:
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
-        username: ${{ github.actor }}
+        username: ${{ secrets.USER }}
         password: ${{ secrets.TOKEN }}
     - name: "メタデータを作成する"
       id: meta # 後段で参照できるようにoutputsに登録する
